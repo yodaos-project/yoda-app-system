@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.0)
+project(yodaos-system CXX)
+set(CMAKE_CXX_STANDARD 11)
+
+# MARK: - system
+set(APP_ROOT_DIR "/opt/apps/system")
+set(APP_INSTALL_DIR "${CMAKE_INSTALL_DIR}${APP_ROOT_DIR}")
+
+file(GLOB SYSTEM_SRC *.js *.json)
+
+install(FILES ${SYSTEM_SRC}
+  DESTINATION ${APP_INSTALL_DIR}
+  PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
