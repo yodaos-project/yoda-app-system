@@ -7,11 +7,15 @@
     ]
   },
   "scripts": {
+    "lint": "standard",
     "pretest": "yoda-cli am force-stop system && yoda-cli pm install .",
     "test": "yoda-cli am instrument system 'test/*.test.js' && yoda-cli am logread system"
   },
   "keywords": [
     "yodaos",
     "system"
-  ]
+  ],
+  "devDependencies": {
+    "standard": "^11.0.1"
+  }
 }
