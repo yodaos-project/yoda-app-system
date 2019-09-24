@@ -1,5 +1,6 @@
 var mm = require('@yodaos/mm')
 var mock = require('@yodaos/mm/mock')
+var system = require('@yoda/system')
 var AudioFocus = require('@yodaos/application').AudioFocus
 
 mock.proxyMethod(require('@yoda/manifest'), 'get', {
@@ -35,3 +36,17 @@ test('should speak text', t => {
 
   t.suite.openUrl('yoda-app://system/shutdown')
 })
+
+test('should enter recovery mode', t => {
+  t.plan(2)
+
+  mock.mockReturns(system, 'setRecoveryMode', () => {
+    t.assert(true)
+  })
+  mock.mockReturns(system, 'reboot', reason => {
+    t.strictEqual(reason, 'recovery')
+    t.end()
+  })
+  t.suite.openUrl('yoda-app://system/recovery')
+})
+
