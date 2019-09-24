@@ -19,4 +19,3 @@ Enter the recovery mode.
 ### yoda-app://system/idle
 
 Enter the idle state that'd abandon all visibilities, i.e. stop all playing music or other visual tasks.
-

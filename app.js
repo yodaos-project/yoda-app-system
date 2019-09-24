@@ -28,10 +28,7 @@ function speak (text, altVoice) {
 
     function doAlt () {
       if (altVoice != null) {
-        player = new MediaPlayer()
-        player.on('playbackcomplete', done)
-        player.on('error', done)
-        player.start(altVoice)
+        play(altVoice, done, done)
       } else {
         done()
       }
@@ -41,9 +38,50 @@ function speak (text, altVoice) {
     synth.cancel()
     if (player != null) {
       player.stop()
+      player = null
     }
   }
   focus.request()
+}
+
+function play (url, oncomplete, onerror) {
+  if (player != null) {
+    player.stop()
+  }
+  player = new MediaPlayer()
+  player.on('playbackcomplete', oncomplete)
+  player.on('error', onerror)
+  player.start(url)
+  return player
+}
+
+function handleRecovery () {
+  var future = new Promise((resolve, reject) => {
+    var focus = new AudioFocus(AudioFocus.Type.TRANSIENT, apiInstance.audioFocus)
+    focus.onGain = () => {
+      play('/opt/media/recovery.mp3', resolve, resolve)
+    }
+    focus.onLoss = () => {
+      if (player != null) {
+        // only reject if this audio is interupted by other actions.
+        player.stop()
+        reject(new Error('the recovery audio focus is lost'))
+      }
+    }
+    focus.request()
+  })
+
+  future.then(() => {
+    return apiInstance.effect.play('system://shutdown.js')
+      .catch((err) => {
+        // always reboot in recovery mode
+        logger.warn(`playing ${url} occurrs error ${err}, but skip`)
+      })
+      .then(() => {
+        system.setRecoveryMode()
+        system.reboot('recovery')
+      })
+  })
 }
 
 module.exports = (api) => {
@@ -82,9 +120,7 @@ module.exports = (api) => {
             })
           break
         case '/recovery':
-          system.setRecoveryMode()
-          api.effect.play('system://shutdown.js')
-            .then(() => system.reboot('recovery'))
+          handleRecovery()
           break
         case '/idle':
           api.visibility.abandonAllVisibilities()
